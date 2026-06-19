@@ -956,3 +956,100 @@ function openDetailModal(item: TestResult) {
     modalCard.classList.remove("scale-95");
   }, 50);
 }
+
+
+// ===== RUN PIPELINE UI =====
+async function setupRunPipeline() {
+  const btnRun = document.getElementById("btn-run-pipeline");
+  const modal = document.getElementById("run-modal");
+  const card = document.getElementById("run-modal-card");
+  const closeBtn = document.getElementById("run-modal-close");
+  const executeBtn = document.getElementById("btn-execute-run");
+  const statusDiv = document.getElementById("run-status");
+  const resultDiv = document.getElementById("run-result");
+  const modelSelect = document.getElementById("run-model");
+
+  // Fetch available models
+  try {
+    const res = await fetch("/api/models");
+    const models = await res.json();
+    if (models.length > 0) {
+      modelSelect.innerHTML = "";
+      models.forEach((m) => {
+        const opt = document.createElement("option");
+        opt.value = m.id;
+        opt.textContent = m.display;
+        opt.className = "bg-slate-900";
+        modelSelect.appendChild(opt);
+      });
+    }
+  } catch (_) {}
+
+  const openModal = () => {
+    modal.classList.remove("hidden");
+    setTimeout(() => card.classList.remove("scale-95"), 50);
+  };
+  const closeModal = () => {
+    card.classList.add("scale-95");
+    setTimeout(() => modal.classList.add("hidden"), 150);
+  };
+
+  if (btnRun) btnRun.addEventListener("click", openModal);
+  if (closeBtn) closeBtn.addEventListener("click", closeModal);
+  if (modal) modal.addEventListener("click", (e) => { if (e.target === modal) closeModal(); });
+
+  if (executeBtn) {
+    executeBtn.addEventListener("click", async () => {
+      const apiUrl = document.getElementById("run-api-url").value;
+      const apiKey = document.getElementById("run-api-key").value;
+      const model = modelSelect.value;
+      const maxPrompts = document.getElementById("run-max-prompts").value;
+
+      const attacks = [];
+      if (document.getElementById("attack-direct").checked) attacks.push("direct");
+      if (document.getElementById("attack-multiturn").checked) attacks.push("multiturn");
+      if (document.getElementById("attack-crosslingual").checked) attacks.push("crosslingual");
+      if (document.getElementById("attack-roleplay").checked) attacks.push("roleplay");
+
+      if (!apiKey) { alert("API Key is required!"); return; }
+
+      executeBtn.disabled = true;
+      resultDiv.classList.add("hidden");
+      statusDiv.classList.remove("hidden");
+
+      try {
+        const res = await fetch("/api/run", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ api_url: apiUrl, api_key: apiKey, model, attack_types: attacks, max_prompts: parseInt(maxPrompts) }),
+        });
+        const data = await res.json();
+        statusDiv.classList.add("hidden");
+        resultDiv.classList.remove("hidden");
+
+        if (data.status === "complete") {
+          resultDiv.className = "text-center text-xs font-bold font-mono py-2 rounded-lg bg-emerald-500/10 border border-emerald-500/20 text-emerald-400";
+          resultDiv.textContent = "Done: " + data.total + " tests | " + data.jailbroken + " jailbroken | " + data.refused + " refused";
+          await loadData();
+          closeModal();
+        } else {
+          resultDiv.className = "text-center text-xs font-bold font-mono py-2 rounded-lg bg-red-500/10 border border-red-500/20 text-red-400";
+          resultDiv.textContent = "Error: " + (data.error || "Unknown error");
+        }
+      } catch (err) {
+        statusDiv.classList.add("hidden");
+        resultDiv.classList.remove("hidden");
+        resultDiv.className = "text-center text-xs font-bold font-mono py-2 rounded-lg bg-red-500/10 border border-red-500/20 text-red-400";
+        resultDiv.textContent = "Connection error: " + err.message;
+      } finally {
+        executeBtn.disabled = false;
+      }
+    });
+  }
+}
+
+// Init run pipeline UI after main dashboard
+const origInit = document.addEventListener;
+document.addEventListener("DOMContentLoaded", () => {
+  setTimeout(setupRunPipeline, 500);
+});

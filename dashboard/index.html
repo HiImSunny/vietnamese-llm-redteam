@@ -156,6 +156,15 @@
           </div>
 
           <!-- Glassy reload button -->
+                    <!-- Run Pipeline button -->
+          <button id="btn-run-pipeline" class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-lg bg-rose-600/20 hover:bg-rose-600/40 active:bg-rose-600/60 text-xs font-semibold text-rose-300 border border-rose-600/30 backdrop-blur-xl transition cursor-pointer select-none">
+            <svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" />
+              <path stroke-linecap="round" stroke-linejoin="round" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            <span id="header-btn-run-txt">Run Test</span>
+          </button>
+
           <button id="btn-reload" class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-lg bg-white/[0.03] hover:bg-white/[0.08] active:bg-white/[0.1] text-xs font-semibold text-white border border-white/[0.08] backdrop-blur-xl transition cursor-pointer select-none">
             <svg class="h-3.5 w-3.5 text-slate-300" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
               <path stroke-linecap="round" stroke-linejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0013.803-3.7M4.031 9.865a8.25 8.25 0 0113.803-3.7l3.181 3.182m0-4.991v4.99" />
@@ -400,6 +409,66 @@
       <p id="footer-text-copy">© 2026 VIET-JBB | AI Red Teaming & Semantics Evaluation Dashboard.</p>
       <p id="footer-text-desc">Nền tảng kiểm thử phục vụ tối ưu và định lượng rào an toàn cho cộng đồng phát triển trí tuệ nhân tạo Việt ngữ.</p>
     </footer>
+
+    <!-- RUN PIPELINE MODAL -->
+    <div id="run-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/85 backdrop-blur-md transition-opacity duration-200">
+      <div id="run-modal-card" class="glass-card w-full max-w-lg rounded-2xl shadow-[0_25px_60px_rgba(0,0,0,0.65)] flex flex-col overflow-hidden max-h-[90vh] scale-95 transition-transform duration-200">
+        <div class="p-5 border-b border-white/[0.08] bg-black/30 flex items-center justify-between">
+          <h2 class="text-xs font-bold text-white uppercase tracking-wider">Run Red-Teaming Test</h2>
+          <button id="run-modal-close" class="p-1.5 px-3 rounded-lg text-slate-400 hover:text-white hover:bg-white/[0.04] transition text-xs cursor-pointer select-none">X Close</button>
+        </div>
+        <div class="p-6 overflow-y-auto space-y-5 text-xs sm:text-sm">
+          <div class="space-y-1.5">
+            <label class="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">API Base URL</label>
+            <input id="run-api-url" type="text" value="https://api.aimlapi.com/v1" class="w-full px-3.5 py-2.5 bg-black/55 border border-white/[0.08] focus:border-indigo-500/80 rounded-xl text-xs font-medium text-white focus:outline-none transition-all duration-300">
+          </div>
+          <div class="space-y-1.5">
+            <label class="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">API Key</label>
+            <input id="run-api-key" type="password" placeholder="sk-..." class="w-full px-3.5 py-2.5 bg-black/55 border border-white/[0.08] focus:border-indigo-500/80 rounded-xl text-xs font-medium text-white focus:outline-none transition-all duration-300">
+          </div>
+          <div class="space-y-1.5">
+            <label class="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Model</label>
+            <select id="run-model" class="w-full px-3.5 py-2.5 bg-black/55 border border-white/[0.08] focus:border-indigo-500/80 rounded-xl text-xs font-medium text-white focus:outline-none transition-all duration-300">
+              <option value="gpt-4o-mini" class="bg-slate-900">GPT-4o-mini</option>
+              <option value="openai/deepseek-chat" class="bg-slate-900">DeepSeek V3</option>
+              <option value="openai/deepseek-reasoner" class="bg-slate-900">DeepSeek R1</option>
+            </select>
+          </div>
+          <div class="space-y-1.5">
+            <label class="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Attack Types</label>
+            <div class="flex flex-wrap gap-2">
+              <label class="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-white/[0.02] border border-white/[0.08] cursor-pointer hover:bg-white/[0.06] transition">
+                <input type="checkbox" id="attack-direct" checked class="accent-indigo-500"> <span class="text-[11px] text-slate-300">Direct</span>
+              </label>
+              <label class="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-white/[0.02] border border-white/[0.08] cursor-pointer hover:bg-white/[0.06] transition">
+                <input type="checkbox" id="attack-multiturn" class="accent-indigo-500"> <span class="text-[11px] text-slate-300">Multiturn</span>
+              </label>
+              <label class="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-white/[0.02] border border-white/[0.08] cursor-pointer hover:bg-white/[0.06] transition">
+                <input type="checkbox" id="attack-crosslingual" class="accent-indigo-500"> <span class="text-[11px] text-slate-300">Crosslingual</span>
+              </label>
+              <label class="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-white/[0.02] border border-white/[0.08] cursor-pointer hover:bg-white/[0.06] transition">
+                <input type="checkbox" id="attack-roleplay" class="accent-indigo-500"> <span class="text-[11px] text-slate-300">Roleplay</span>
+              </label>
+            </div>
+          </div>
+          <div class="space-y-1.5">
+            <label class="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Max Prompts</label>
+            <select id="run-max-prompts" class="w-full px-3.5 py-2.5 bg-black/55 border border-white/[0.08] focus:border-indigo-500/80 rounded-xl text-xs font-medium text-white focus:outline-none transition-all duration-300">
+              <option value="3" class="bg-slate-900">3 (Quick)</option>
+              <option value="5" selected class="bg-slate-900">5 (Standard)</option>
+              <option value="10" class="bg-slate-900">10 (Extended)</option>
+              <option value="25" class="bg-slate-900">25 (Full)</option>
+            </select>
+          </div>
+          <button id="btn-execute-run" class="w-full py-3 rounded-xl bg-rose-600/80 hover:bg-rose-600 text-xs font-bold text-white transition cursor-pointer select-none disabled:opacity-40 disabled:cursor-not-allowed">Run Pipeline</button>
+          <div id="run-status" class="hidden text-center text-xs text-slate-400 font-mono py-2">
+            <span class="inline-block h-3 w-3 rounded-full bg-indigo-500 animate-pulse mr-2"></span>
+            Running pipeline...
+          </div>
+          <div id="run-result" class="hidden text-center text-xs font-bold font-mono py-2 rounded-lg bg-black/30 border border-white/[0.06]"></div>
+        </div>
+      </div>
+    </div>
 
     <!-- INTERACTION DETAILS LIGHTWEIGHT DIALOG CONSOLE -->
     <div id="detail-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/85 backdrop-blur-md transition-opacity duration-200">
