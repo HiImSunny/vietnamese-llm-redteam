@@ -1,0 +1,69 @@
+﻿# Vietnamese LLM Red-Teaming Configuration
+# All models route through AIML API (OpenAI-compatible, https://api.aimlapi.com/v1)
+
+models:
+  openai:
+    - id: "gpt-4o-mini"
+      display: "GPT-4o-mini"
+      provider: "openai"
+      enabled: true
+    - id: "openai/deepseek-chat"
+      display: "DeepSeek V3"
+      provider: "openai"
+      enabled: true
+    - id: "openai/deepseek-reasoner"
+      display: "DeepSeek R1"
+      provider: "openai"
+      enabled: true
+  anthropic:
+    - id: "claude-sonnet-4-5"
+      display: "Claude Sonnet 4.5"
+      provider: "openai"
+      enabled: false
+    - id: "claude-haiku-4-5"
+      display: "Claude Haiku 4.5"
+      provider: "openai"
+      enabled: false
+  google:
+    - id: "gemini-2.5-pro"
+      display: "Gemini 2.5 Pro"
+      provider: "openai"
+      enabled: false
+    - id: "gemini-2.5-flash"
+      display: "Gemini 2.5 Flash"
+      provider: "openai"
+      enabled: false
+
+attacks:
+  direct:
+    enabled: true
+    max_turns: 1
+  multiturn:
+    enabled: true
+    max_turns: 5
+  crosslingual:
+    enabled: true
+    languages: ["en", "vi"]
+    switch_turn: 2
+  roleplay:
+    enabled: true
+    personas:
+      - "teacher"
+      - "researcher"
+      - "journalist"
+      - "concerned_citizen"
+
+judge:
+  model: "gpt-4o-mini"
+  provider: "openai"
+  temperature: 0.0
+
+dataset:
+  prompt_files:
+    - "data/prompts/jbb_translated_vi.json"
+    - "data/prompts/vn_specific.json"
+    - "data/prompts/benign_vi.json"
+
+output:
+  results_dir: "data/results"
+  report_dir: "report"
