@@ -1,0 +1,12 @@
+services:
+  - type: web
+    name: vietnamese-llm-redteam
+    runtime: python
+    buildCommand: |
+      pip install -r requirements.txt
+      cd dashboard && npm install && npm run build
+    startCommand: python dashboard/serve.py
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.11.0
+    autoDeploy: true
