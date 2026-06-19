@@ -967,23 +967,9 @@ async function setupRunPipeline() {
   const executeBtn = document.getElementById("btn-execute-run");
   const statusDiv = document.getElementById("run-status");
   const resultDiv = document.getElementById("run-result");
-  const modelSelect = document.getElementById("run-model");
+  const modelInput = document.getElementById("run-model");
 
-  // Fetch available models
-  try {
-    const res = await fetch("/api/models");
-    const models = await res.json();
-    if (models.length > 0) {
-      modelSelect.innerHTML = "";
-      models.forEach((m) => {
-        const opt = document.createElement("option");
-        opt.value = m.id;
-        opt.textContent = m.display;
-        opt.className = "bg-slate-900";
-        modelSelect.appendChild(opt);
-      });
-    }
-  } catch (_) {}
+  // Model list loaded from datalist in HTML
 
   const openModal = () => {
     modal.classList.remove("hidden");
@@ -1002,7 +988,7 @@ async function setupRunPipeline() {
     executeBtn.addEventListener("click", async () => {
       const apiUrl = document.getElementById("run-api-url").value;
       const apiKey = document.getElementById("run-api-key").value;
-      const model = modelSelect.value;
+      const model = modelInput.value;
       const maxPrompts = document.getElementById("run-max-prompts").value;
 
       const attacks = [];
@@ -1048,8 +1034,3 @@ async function setupRunPipeline() {
   }
 }
 
-// Init run pipeline UI after main dashboard
-const origInit = document.addEventListener;
-document.addEventListener("DOMContentLoaded", () => {
-  setTimeout(setupRunPipeline, 500);
-});

@@ -33,7 +33,7 @@ def _get_models():
             models = []
             for provider, model_list in cfg.get("models", {}).items():
                 for m in model_list:
-                    if m.get("enabled", True):
+                    # Return all models (including disabled) for full picker
                         models.append({
                             "id": m["id"],
                             "display": m.get("display", m["id"]),

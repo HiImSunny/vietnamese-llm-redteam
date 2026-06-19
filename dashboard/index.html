@@ -420,7 +420,7 @@
         <div class="p-6 overflow-y-auto space-y-5 text-xs sm:text-sm">
           <div class="space-y-1.5">
             <label class="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">API Base URL</label>
-            <input id="run-api-url" type="text" value="https://openrouter.ai/v1" class="w-full px-3.5 py-2.5 bg-black/55 border border-white/[0.08] focus:border-indigo-500/80 rounded-xl text-xs font-medium text-white focus:outline-none transition-all duration-300">
+            <input id="run-api-url" type="text" value="https://openrouter.ai/api/v1" class="w-full px-3.5 py-2.5 bg-black/55 border border-white/[0.08] focus:border-indigo-500/80 rounded-xl text-xs font-medium text-white focus:outline-none transition-all duration-300">
           </div>
           <div class="space-y-1.5">
             <label class="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">API Key</label>
@@ -428,11 +428,19 @@
           </div>
           <div class="space-y-1.5">
             <label class="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Model</label>
-            <select id="run-model" class="w-full px-3.5 py-2.5 bg-black/55 border border-white/[0.08] focus:border-indigo-500/80 rounded-xl text-xs font-medium text-white focus:outline-none transition-all duration-300">
-              <option value="gpt-4o-mini" class="bg-slate-900">GPT-4o-mini</option>
-              <option value="openai/deepseek-chat" class="bg-slate-900">DeepSeek V3</option>
-              <option value="openai/deepseek-reasoner" class="bg-slate-900">DeepSeek R1</option>
-            </select>
+            <input id="run-model" type="text" list="model-list" value="gpt-4o-mini" placeholder="Type or pick a model..." class="w-full px-3.5 py-2.5 bg-black/55 border border-white/[0.08] focus:border-indigo-500/80 rounded-xl text-xs font-medium text-white focus:outline-none transition-all duration-300 placeholder:text-slate-500">
+            <datalist id="model-list">
+              <option value="gpt-4o-mini">GPT-4o-mini</option>
+              <option value="openai/deepseek-chat">DeepSeek V3</option>
+              <option value="openai/deepseek-reasoner">DeepSeek R1</option>
+              <option value="openrouter/mistralai/mistral-7b-instruct:free">Mistral 7B (Free)</option>
+              <option value="openrouter/google/gemma-2-9b-it:free">Gemma 2 9B (Free)</option>
+              <option value="openrouter/meta-llama/llama-3.1-8b-instruct:free">Llama 3.1 8B (Free)</option>
+              <option value="claude-sonnet-4-5">Claude Sonnet 4.5</option>
+              <option value="claude-haiku-4-5">Claude Haiku 4.5</option>
+              <option value="gemini-2.5-pro">Gemini 2.5 Pro</option>
+              <option value="gemini-2.5-flash">Gemini 2.5 Flash</option>
+            </datalist>
           </div>
           <div class="space-y-1.5">
             <label class="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Attack Types</label>
