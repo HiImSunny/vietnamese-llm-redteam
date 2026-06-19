@@ -4,8 +4,6 @@ venv/
 .venv/
 
 # Results (generated)
-data/results/*.json
-data/results/*.csv
 data/results/hf_dataset/
 
 # Python

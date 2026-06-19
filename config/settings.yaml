@@ -33,6 +33,19 @@ models:
       display: "Gemini 2.5 Flash"
       provider: "openai"
       enabled: false
+  openrouter:
+    - id: "openrouter/mistralai/mistral-7b-instruct:free"
+      display: "Mistral 7B (Free)"
+      provider: "openai"
+      enabled: true
+    - id: "openrouter/google/gemma-2-9b-it:free"
+      display: "Gemma 2 9B (Free)"
+      provider: "openai"
+      enabled: true
+    - id: "openrouter/meta-llama/llama-3.1-8b-instruct:free"
+      display: "Llama 3.1 8B (Free)"
+      provider: "openai"
+      enabled: true
 
 attacks:
   direct:
