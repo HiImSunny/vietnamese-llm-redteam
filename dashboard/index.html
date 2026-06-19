@@ -1,1 +1,482 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><title>VN Red-Team</title></head><body bgcolor="#0b0e14" text="#e2e8f0" style="font-family:system-ui;max-width:1200px;margin:0 auto;padding:20px"><div id="e" style="display:none;text-align:center;padding:60px"><h3>No Data</h3></div><div id="d"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:24px"><div><h1 style="font-size:20px;margin:0">VN LLM Red-Teaming</h1><small style="color:#8892a4">Asia Track - Technical AI Safety</small></div><span id="s" style="font-size:12px;background:#1a2030;padding:4px 10px;border-radius:4px">Loading</span></div><div id="h" style="display:flex;gap:20px;flex-wrap:wrap;margin-bottom:20px"></div><div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:20px"><div style="background:#141922;border:1px solid #252d3e;border-radius:6px;padding:16px"><h3 style="margin:0 0 12px 0;font-size:13px;color:#8892a4">By Model</h3><div id="mc"></div></div><div style="background:#141922;border:1px solid #252d3e;border-radius:6px;padding:16px"><h3 style="margin:0 0 12px 0;font-size:13px;color:#8892a4">By Attack</h3><div id="ac"></div></div></div><div style="background:#141922;border:1px solid #252d3e;border-radius:6px;padding:16px"><h3 style="margin:0 0 12px 0;font-size:13px;color:#8892a4">Results</h3><div style="overflow-x:auto"><table style="width:100%;border-collapse:collapse;font-size:12px"><thead><tr style="border-bottom:1px solid #252d3e;color:#5a6478;font-size:11px;text-transform:uppercase"><th style="text-align:left;padding:8px">ID</th><th style="text-align:left;padding:8px">Prompt</th><th style="text-align:left;padding:8px">Model</th><th style="text-align:left;padding:8px">Attack</th><th style="text-align:left;padding:8px">Cat</th><th style="text-align:left;padding:8px">Verdict</th><th style="text-align:left;padding:8px">Response</th></tr></thead><tbody id="tb"></tbody></table></div></div></div><script>let a=[];async function init(){const r=await fetch('/api/results');a=await r.json();if(a.length===0){document.getElementById('e').style.display='block';return}document.getElementById('e').style.display='none';render()}function render(){const m=[...new Set(a.map(x=>x.model_display?x.model_display:x.model))];document.getElementById('s').textContent=m.length+'mdl '+a.length+'tst';const j=a.filter(x=>x.verdict==='JAILBROKEN').length;const f=a.filter(x=>x.verdict==='REFUSED').length;document.getElementById('h').innerHTML='<div style="flex:1"><div style="font-size:11px;color:#5a6478;text-transform:uppercase">Tests</div><div style="font-size:32px;font-weight:800;color:#38bdf8">'+a.length+'</div></div><div style="flex:1"><div style="font-size:11px;color:#5a6478;text-transform:uppercase">Jailbroken</div><div style="font-size:32px;font-weight:800;color:#f87171">'+j+'<span style="font-size:14px;color:#8892a4;font-weight:400">('+(j>0?(j/a.length*100).toFixed(1):0)+'%)</span></div></div><div style="flex:1"><div style="font-size:11px;color:#5a6478;text-transform:uppercase">Refused</div><div style="font-size:32px;font-weight:800;color:#34d399">'+f+'</div></div>';drawModel();drawAttack();drawTable()}function drawModel(){const g={};a.forEach(z=>{let n=z.model_display?z.model_display:z.model?z.model:'?';if(!g[n])g[n]=0;if(z.verdict==='JAILBROKEN')g[n]++});const e=Object.entries(g).sort((p,q)=>q[1]-p[1]);document.getElementById('mc').innerHTML='';e.forEach(([n,c])=>{let tot=a.filter(z=>{let nm=z.model_display?z.model_display:z.model;return nm===n}).length;let pct=tot>0?((c/tot*100).toFixed(0)):0;document.getElementById('mc').innerHTML+='<div style="display:flex;gap:8px;align-items:center;margin-bottom:6px"><div style="width:100px;font-size:12px;color:#8892a4;text-align:right">'+n+'</div><div style="flex:1;height:20px;background:#1a2030;border-radius:4px;overflow:hidden"><div style="height:100%;background:#f87171;width:'+pct+'%;border-radius:4px;display:flex;align-items:center;justify-content:flex-end;padding:0 4px;font-size:10px;color:#450a0a">'+(pct>8?pct+'%':'')+'</div></div></div>'})}function drawAttack(){const g={};a.forEach(z=>{let t=z.attack_type?z.attack_type:'?';if(t.substring(0,8)==='roleplay')t='roleplay';if(!g[t])g[t]=0;if(z.verdict==='JAILBROKEN')g[t]++});const e=Object.entries(g);const lb={direct:'Direct',multiturn:'Multi-Turn',crosslingual:'Cross-Lingual',roleplay:'Role-Play'};document.getElementById('ac').innerHTML='';e.forEach(([t,c])=>{let tot=a.filter(z=>{let v=z.attack_type?z.attack_type:'?';if(v.substring(0,8)==='roleplay')v='roleplay';return v===t}).length;let pct=tot>0?((c/tot*100).toFixed(0)):0;document.getElementById('ac').innerHTML+='<div style="display:flex;gap:8px;align-items:center;margin-bottom:6px"><div style="width:100px;font-size:12px;color:#8892a4;text-align:right">'+(lb[t]?lb[t]:t)+'</div><div style="flex:1;height:20px;background:#1a2030;border-radius:4px;overflow:hidden"><div style="height:100%;background:#f87171;width:'+pct+'%;border-radius:4px;display:flex;align-items:center;justify-content:flex-end;padding:0 4px;font-size:10px;color:#450a0a">'+(pct>8?pct+'%':'')+'</div></div></div>'})}function drawTable(){const tb=document.getElementById('tb');tb.innerHTML=a.slice(0,100).map(z=>{let pv=z.response?z.response.substring(0,60):(z.error?z.error:'N/A');if(z.response.length>60)pv+='...';let vc='background:#5a6478';if(z.verdict==='JAILBROKEN')vc='background:#f87171;color:#fff';else if(z.verdict==='REFUSED')vc='background:#34d399;color:#022c22';let pid=z.prompt_id?z.prompt_id:'-';let pt=z.prompt_text?z.prompt_text:'';if(pt.length>40)pt=pt.substring(0,40)+'..';let md=z.model_display?z.model_display:z.model?z.model:'-';let at=z.attack_type?z.attack_type:'-';let ct=z.category?z.category:'-';let vd=z.verdict?z.verdict:'N/A';return'<tr style="border-bottom:1px solid #252d3e"><td style="padding:8px">'+pid+'</td><td style="padding:8px">'+pt+'</td><td style="padding:8px">'+md+'</td><td style="padding:8px">'+at+'</td><td style="padding:8px">'+ct+'</td><td style="padding:8px"><span style="display:inline-block;padding:1px 6px;border-radius:3px;font-size:10px;font-weight:700;'+vc+'">'+vd+'</span></td><td style="padding:8px;font-size:11px">'+pv+'</td></tr>'}).join('')}init()</script></body></html>
+<!doctype html>
+<html lang="vi">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>VIET-JBB | LLM Safety & Red Teaming Intelligence Console</title>
+    <!-- Google Fonts: Inter for sleek UI, JetBrains Mono for clean code & telemetry numbers -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+      body {
+        font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      }
+      code, pre, .mono {
+        font-family: 'JetBrains Mono', monospace;
+      }
+      /* Custom fine scrollbar for premium glass integration */
+      ::-webkit-scrollbar {
+        width: 6px;
+        height: 6px;
+      }
+      ::-webkit-scrollbar-track {
+        background: transparent;
+      }
+      ::-webkit-scrollbar-thumb {
+        background: rgba(255, 255, 255, 0.08);
+        border-radius: 99px;
+      }
+      ::-webkit-scrollbar-thumb:hover {
+        background: rgba(99, 102, 241, 0.4);
+      }
+
+      /* Glassmorphism & Minimalist UI Rules */
+      .glass-card {
+        background: linear-gradient(135deg, rgba(255, 255, 255, 0.03) 0%, rgba(255, 255, 255, 0.01) 100%);
+        backdrop-filter: blur(28px);
+        -webkit-backdrop-filter: blur(28px);
+        border: 1px solid rgba(255, 255, 255, 0.05);
+        box-shadow: 
+          inset 0 1px 1px 0 rgba(255, 255, 255, 0.04),
+          0 10px 40px -10px rgba(0, 0, 0, 0.7);
+        transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+      }
+      .glass-card:hover {
+        background: linear-gradient(135deg, rgba(255, 255, 255, 0.05) 0%, rgba(255, 255, 255, 0.02) 100%);
+        border-color: rgba(99, 102, 241, 0.3);
+        box-shadow: 
+          inset 0 1px 1.5px 0 rgba(255, 255, 255, 0.08),
+          0 25px 50px -12px rgba(0, 0, 0, 0.85),
+          0 0 30px -5px rgba(99, 102, 241, 0.06);
+        transform: translateY(-2px);
+      }
+      .glass-card-static {
+        background: linear-gradient(135deg, rgba(255, 255, 255, 0.02) 0%, rgba(255, 255, 255, 0.005) 100%);
+        backdrop-filter: blur(24px);
+        -webkit-backdrop-filter: blur(24px);
+        border: 1px solid rgba(255, 255, 255, 0.04);
+        box-shadow: 
+          inset 0 1px 1px 0 rgba(255, 255, 255, 0.03),
+          0 12px 40px -15px rgba(0, 0, 0, 0.6);
+      }
+      .glass-header {
+        background: rgba(3, 7, 18, 0.45);
+        backdrop-filter: blur(20px);
+        -webkit-backdrop-filter: blur(20px);
+        border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+      }
+      /* Highly-refined, micro glowing indicators */
+      .status-dot-green {
+        background-color: #10b981;
+        box-shadow: 0 0 12px 2px rgba(16, 185, 129, 0.35);
+      }
+      .status-dot-amber {
+        background-color: #f59e0b;
+        box-shadow: 0 0 12px 2px rgba(245, 158, 11, 0.35);
+      }
+      .status-dot-red {
+        background-color: #ef4444;
+        box-shadow: 0 0 12px 2px rgba(239, 68, 68, 0.35);
+      }
+      .status-dot-slate {
+        background-color: #475569;
+        box-shadow: 0 0 8px 1px rgba(71, 85, 105, 0.15);
+      }
+      /* Sleek progress bar container */
+      .progress-bg {
+        background-color: rgba(255, 255, 255, 0.02);
+        border: 1px solid rgba(255, 255, 255, 0.04);
+        box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.4);
+      }
+      /* Soft Glassy overlay on progress values */
+      .glass-bar {
+        position: relative;
+        overflow: hidden;
+      }
+      .glass-bar::after {
+        content: '';
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(90deg, rgba(255,255,255,0) 0%, rgba(255,255,255,0.12) 50%, rgba(255,255,255,0) 100%);
+        animation: glass-shimmer 3s infinite linear;
+      }
+      @keyframes glass-shimmer {
+        0% { transform: translateX(-100%); }
+        100% { transform: translateX(100%); }
+      }
+    </style>
+  </head>
+  <body class="bg-[#030712] text-slate-200 min-h-screen flex flex-col antialiased selection:bg-indigo-500/30 selection:text-indigo-200 relative overflow-x-hidden">
+
+    <!-- Ambient Backdrops: Clean and Subdued for High Readability & No Clutter -->
+    <div class="absolute top-[-100px] left-[15%] w-[650px] h-[500px] rounded-full bg-indigo-500/[0.03] blur-[120px] pointer-events-none -z-10"></div>
+    <div class="absolute bottom-[200px] left-[-150px] w-[60%] h-[550px] rounded-full bg-slate-500/[0.02] blur-[140px] pointer-events-none -z-10"></div>
+
+    <!-- Header navigation with premium high-index glass blur background -->
+    <header class="border-b border-white/[0.08] bg-[#030712]/60 backdrop-blur-2xl sticky top-0 z-30 shadow-[0_4px_30px_rgba(0,0,0,0.5)]">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex flex-col sm:flex-row sm:items-center justify-between gap-5">
+        
+        <!-- VIET-JBB Brand presentation with high-tech badge design -->
+        <div class="flex items-center gap-4">
+          <div class="relative shrink-0 flex items-center justify-center p-3 rounded-xl bg-slate-900 border border-slate-700 shadow-md overflow-hidden">
+            <div class="absolute inset-0 bg-indigo-500/5"></div>
+            <span class="text-xs font-black tracking-widest text-indigo-400 drop-shadow-[0_0_10px_rgba(99,102,241,0.3)]">VIET-JBB</span>
+          </div>
+          <div class="space-y-0.5">
+            <div class="flex items-center gap-2">
+              <span class="inline-flex h-2 w-2 rounded-full status-dot-red"></span>
+              <h1 class="text-sm font-bold tracking-tight text-white flex items-center gap-1.5 uppercase tracking-wide">
+                LLM Safety & Red Team Console
+              </h1>
+            </div>
+            <p id="header-brand-sub" class="text-[10px] text-slate-400 font-medium">
+              Hệ thống đánh giá Jailbreak an toàn mô hình ngôn ngữ tiếng Việt
+            </p>
+          </div>
+        </div>
+
+        <!-- Upper Control Room: Lang Switch, Refresher, Status -->
+        <div class="flex flex-wrap items-center gap-3">
+          
+          <!-- Glossy connection status badge -->
+          <div id="backend-badge" class="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-white/[0.02] border border-white/[0.08] backdrop-blur-xl text-[11px] text-slate-300 transition duration-300">
+            <span id="backend-indicator" class="h-2 w-2 rounded-full status-dot-slate"></span>
+            <span id="backend-text" class="font-mono">Kiểm thử kết nối...</span>
+          </div>
+
+          <!-- Glass Language Switch Segment Controller -->
+          <div class="inline-flex rounded-lg p-0.5 bg-white/[0.02] border border-white/[0.08] backdrop-blur-xl">
+            <button id="lang-vi-btn" class="px-2.5 py-1 text-[10px] font-bold rounded-md transition select-none bg-indigo-600/90 text-white cursor-pointer hover:bg-indigo-600">
+              VI
+            </button>
+            <button id="lang-en-btn" class="px-2.5 py-1 text-[10px] font-bold rounded-md transition select-none text-slate-400 hover:text-white cursor-pointer hover:bg-white/[0.04]">
+              EN
+            </button>
+          </div>
+
+          <!-- Glassy reload button -->
+          <button id="btn-reload" class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-lg bg-white/[0.03] hover:bg-white/[0.08] active:bg-white/[0.1] text-xs font-semibold text-white border border-white/[0.08] backdrop-blur-xl transition cursor-pointer select-none">
+            <svg class="h-3.5 w-3.5 text-slate-300" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0013.803-3.7M4.031 9.865a8.25 8.25 0 0113.803-3.7l3.181 3.182m0-4.991v4.99" />
+            </svg>
+            <span id="header-btn-reload-txt">Tải lại</span>
+          </button>
+        </div>
+
+      </div>
+    </header>
+
+    <!-- Workspace main layout container -->
+    <main class="flex-grow max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
+
+      <!-- HERO VISUAL STATS: Beautiful High-Gloss Transparent Bento Elements -->
+      <section class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+        
+        <!-- Metric Box 1: Total Experiments -->
+        <div class="relative glass-card rounded-2xl p-6 transition duration-300 group overflow-hidden">
+          <div class="absolute -top-12 -right-12 w-24 h-24 rounded-full bg-indigo-500/5 blur-xl group-hover:scale-125 transition-all duration-500"></div>
+          <p id="stat-box-1-lbl" class="text-[10px] font-bold uppercase tracking-wider text-slate-400">TỔNG SỐ THỬ NGHIỆM</p>
+          <div class="flex items-baseline justify-between mt-4">
+            <h3 id="stat-total" class="text-3xl font-bold tracking-tight text-white font-mono drop-shadow-[0_2px_10px_rgba(255,255,255,0.1)]">--</h3>
+            <span id="stat-box-1-unit" class="text-[9px] font-bold bg-indigo-500/10 text-indigo-400 border border-indigo-500/15 px-2 py-0.5 rounded tracking-wider">LƯỢT CHẠY</span>
+          </div>
+          <p id="stat-box-1-desc" class="text-xs text-slate-500 mt-4 leading-relaxed font-light">
+            Hồi đáp ngữ nghĩa từ bộ dữ liệu chuẩn
+          </p>
+        </div>
+
+        <!-- Metric Box 2: Jailbroken count with progress line -->
+        <div class="relative glass-card rounded-2xl p-6 transition duration-300 group overflow-hidden">
+          <div class="absolute -top-12 -right-12 w-24 h-24 rounded-full bg-red-500/5 blur-xl group-hover:scale-125 transition-all duration-500"></div>
+          <div class="flex items-center justify-between">
+            <p id="stat-box-2-lbl" class="text-[10px] font-bold uppercase tracking-wider text-red-400">BỊ BỂ KHÓA (JAILBROKEN)</p>
+            <span id="stat-jailbroken-pct" class="text-xs font-bold font-mono text-red-400 bg-red-500/10 border border-red-500/15 px-2 py-0.5 rounded">--%</span>
+          </div>
+          <h3 id="stat-jailbroken" class="text-3xl font-bold tracking-tight text-red-400 font-mono mt-4 drop-shadow-[0_2px_10px_rgba(239,68,68,0.1)]">--</h3>
+          <!-- Clean micro progress bar -->
+          <div class="w-full progress-bg h-1.5 rounded-full mt-4 overflow-hidden">
+            <div id="progress-jailbroken" class="glass-bar bg-gradient-to-r from-red-500 to-rose-450 h-full rounded-full transition-all duration-700" style="width: 0%"></div>
+          </div>
+        </div>
+
+        <!-- Metric Box 3: Safe protection Refused -->
+        <div class="relative glass-card rounded-2xl p-6 transition duration-300 group overflow-hidden">
+          <div class="absolute -top-12 -right-12 w-24 h-24 rounded-full bg-emerald-500/5 blur-xl group-hover:scale-125 transition-all duration-500"></div>
+          <div class="flex items-center justify-between">
+            <p id="stat-box-3-lbl" class="text-[10px] font-bold uppercase tracking-wider text-emerald-400">NGĂN CHẶN AN TOÀN (REFUSED)</p>
+            <span id="stat-refused-pct" class="text-xs font-bold font-mono text-emerald-400 bg-emerald-500/10 border border-emerald-500/15 px-2 py-0.5 rounded">--%</span>
+          </div>
+          <h3 id="stat-refused" class="text-3xl font-bold tracking-tight text-emerald-400 font-mono mt-4 drop-shadow-[0_2px_10px_rgba(16,185,129,0.1)]">--</h3>
+          <div class="w-full progress-bg h-1.5 rounded-full mt-4 overflow-hidden">
+            <div id="progress-refused" class="glass-bar bg-gradient-to-r from-emerald-500 to-teal-450 h-full rounded-full transition-all duration-700" style="width: 0%"></div>
+          </div>
+        </div>
+
+        <!-- Metric Box 4: Errors -->
+        <div class="relative glass-card rounded-2xl p-6 transition duration-300 group overflow-hidden">
+          <div class="absolute -top-12 -right-12 w-24 h-24 rounded-full bg-amber-500/5 blur-xl group-hover:scale-125 transition-all duration-500"></div>
+          <div class="flex items-center justify-between">
+            <p id="stat-box-4-lbl" class="text-[10px] font-bold uppercase tracking-wider text-amber-500">SỰ CỐ ĐÁNH GIÁ (ERRORS)</p>
+            <span id="stat-errors-pct" class="text-xs font-bold font-mono text-amber-400 bg-amber-500/10 border border-amber-500/15 px-2 py-0.5 rounded">--%</span>
+          </div>
+          <h3 id="stat-errors" class="text-3xl font-bold tracking-tight text-amber-400 font-mono mt-4 drop-shadow-[0_2px_10px_rgba(245,158,11,0.1)]">--</h3>
+          <div class="w-full progress-bg h-1.5 rounded-full mt-4 overflow-hidden">
+            <div id="progress-errors" class="glass-bar bg-gradient-to-r from-amber-500 to-orange-450 h-full rounded-full transition-all duration-700" style="width: 0%"></div>
+          </div>
+        </div>
+
+      </section>
+
+      <!-- DATA CHARTS (MODELS CHART & ATTACK VECTORS CHART): Large Glassy Dividers -->
+      <section class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        
+        <!-- Panel 1: Model Risk Index -->
+        <div class="glass-card rounded-2xl p-6 relative overflow-hidden">
+          <div class="absolute top-0 right-0 w-32 h-32 bg-indigo-500/[0.02] rounded-full blur-2xl pointer-events-none"></div>
+          <div class="border-b border-white/[0.08] pb-4 mb-6">
+            <h3 id="chart-model-panel-title" class="text-xs font-bold text-white uppercase tracking-wider">Tỷ Lệ Bị Bẻ Khóa Theo Mô Hình Ngôn Ngữ</h3>
+            <p id="chart-model-panel-desc" class="text-xs text-slate-400 mt-1">Tỷ lệ phần trăm bẻ khóa thành công trên tổng số lượt thử nghiệm an an sinh của mô hình</p>
+          </div>
+          <!-- Vertical clean bar lines mapping models dynamically -->
+          <div id="chart-models-container" class="space-y-5">
+            <div class="space-y-3">
+              <div class="h-3 bg-white/[0.04] rounded w-1/3"></div>
+              <div class="h-7 bg-white/[0.04] rounded"></div>
+              <div class="h-3 bg-white/[0.04] rounded w-1/4"></div>
+              <div class="h-7 bg-white/[0.04] rounded"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Panel 2: Attack Method Efficacies -->
+        <div class="glass-card rounded-2xl p-6 relative overflow-hidden">
+          <div class="absolute top-0 right-0 w-32 h-32 bg-pink-500/[0.02] rounded-full blur-2xl pointer-events-none"></div>
+          <div class="border-b border-white/[0.08] pb-4 mb-6">
+            <h3 id="chart-attack-panel-title" class="text-xs font-bold text-white uppercase tracking-wider">Độ Hiệu Quả Theo Phương Thức Tấn Công (Attack Vectors)</h3>
+            <p id="chart-attack-panel-desc" class="text-xs text-slate-400 mt-1">Sự chênh lệch tỉ lệ bẻ khóa thành công dựa trên cấu trúc prompt và hình thức tác động</p>
+          </div>
+          <!-- Attack methods chart dynamically loaded -->
+          <div id="chart-attacks-container" class="space-y-5">
+            <div class="space-y-3">
+              <div class="h-3 bg-white/[0.04] rounded w-1/3"></div>
+              <div class="h-7 bg-white/[0.04] rounded"></div>
+              <div class="h-3 bg-white/[0.04] rounded w-1/4"></div>
+              <div class="h-7 bg-white/[0.04] rounded"></div>
+            </div>
+          </div>
+        </div>
+
+      </section>
+
+      <!-- CORE DATABASE RECORDS LOGS WITH SOPHISTICATED GLASSY FILTERS -->
+      <section class="glass-card-static rounded-3xl overflow-hidden relative">
+        <div class="absolute -top-16 -left-16 w-32 h-32 bg-cyan-500/[0.02] rounded-full blur-2xl pointer-events-none"></div>
+
+        <!-- Filters Workspace Header -->
+        <div class="p-6 sm:p-8 border-b border-white/[0.08] bg-black/40 space-y-6">
+          <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
+            <div>
+              <h3 id="list-panel-title" class="text-xs font-bold text-white uppercase tracking-wider">Danh Sách Thực Nghiệm Chi Tiết</h3>
+              <p id="list-panel-desc" class="text-xs text-slate-400 mt-1">Rà soát chi tiết, lọc và truy vấn từng lượt thử nghiệm bảo mật ngữ nghĩa tiếng Việt</p>
+            </div>
+
+            <!-- Beautiful Sleek High-Glossy Search Input -->
+            <div class="w-full lg:max-w-xs relative group">
+              <span class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-500 group-hover:text-indigo-400 transition-colors">
+                <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                </svg>
+              </span>
+              <input 
+                id="search-filter" 
+                type="text" 
+                placeholder="Tìm tự khóa trong prompt..."
+                class="w-full pl-10 pr-4 py-2.5 bg-black/55 hover:bg-black/75 focus:bg-slate-950 border border-white/[0.08] focus:border-indigo-500/80 rounded-xl text-xs font-medium text-white focus:outline-none transition-all duration-300 placeholder:text-slate-500 focus:shadow-[0_0_15px_rgba(99,102,241,0.15)]"
+              />
+            </div>
+          </div>
+
+          <!-- Multi filter badging system (Re-aligned to beautiful, unified buttons) -->
+          <div class="space-y-4 pt-2 border-t border-white/[0.04]">
+            
+            <!-- Model Filters -->
+            <div class="flex flex-col sm:flex-row sm:items-center gap-4">
+              <span id="filter-model-lbl" class="text-[10px] font-bold text-slate-400 uppercase tracking-wider w-24 shrink-0">Lọc Mô Hình:</span>
+              <div id="filter-model-buttons" class="flex flex-wrap gap-2">
+                <!-- Injected dynamically -->
+                <button class="px-3.5 py-1.5 bg-indigo-600 text-white text-[11px] font-semibold rounded-lg cursor-pointer transition">Tất cả</button>
+              </div>
+            </div>
+
+            <!-- Verdict Filters -->
+            <div class="flex flex-col sm:flex-row sm:items-center gap-4">
+              <span id="filter-verdict-lbl" class="text-[10px] font-bold text-slate-400 uppercase tracking-wider w-24 shrink-0">Kết Luận:</span>
+              <div id="filter-verdict-buttons" class="flex flex-wrap gap-2">
+                <button data-verdict="ALL" class="filter-badge px-3.5 py-1.5 bg-indigo-600 text-white text-[11px] font-semibold rounded-lg transition hover:bg-indigo-500 cursor-pointer select-none">Tất cả</button>
+                <button data-verdict="JAILBROKEN" class="filter-badge px-3.5 py-1.5 rounded-lg bg-white/[0.02] border border-white/[0.08] hover:bg-white/[0.08] text-[11px] font-semibold text-red-400 transition cursor-pointer select-none flex items-center gap-1.5">
+                  <span class="h-1.5 w-1.5 rounded-full bg-red-500"></span>
+                  JAILBROKEN
+                </button>
+                <button data-verdict="REFUSED" class="filter-badge px-3.5 py-1.5 rounded-lg bg-white/[0.02] border border-white/[0.08] hover:bg-white/[0.08] text-[11px] font-semibold text-emerald-400 transition cursor-pointer select-none flex items-center gap-1.5">
+                  <span class="h-1.5 w-1.5 rounded-full bg-emerald-500"></span>
+                  REFUSED
+                </button>
+                <button data-verdict="ERROR" class="filter-badge px-3.5 py-1.5 rounded-lg bg-white/[0.02] border border-white/[0.08] hover:bg-white/[0.08] text-[11px] font-semibold text-amber-500 transition cursor-pointer select-none flex items-center gap-1.5">
+                  <span class="h-1.5 w-1.5 rounded-full bg-amber-500"></span>
+                  ERROR
+                </button>
+              </div>
+            </div>
+
+          </div>
+        </div>
+
+        <!-- Desktop Grid Log Table Layout (Premium translucent look) -->
+        <div class="hidden md:block overflow-x-auto">
+          <table class="w-full text-left border-collapse">
+            <thead>
+              <tr class="bg-black/35 border-b border-white/[0.08] text-[10px] font-bold uppercase tracking-wider text-slate-400">
+                <th id="th-lbl-id" class="px-6 py-4">Mã Đề</th>
+                <th id="th-lbl-prompt" class="px-6 py-4 w-2/5">Nội Dung Thử Nghiệm (Prompt)</th>
+                <th id="th-lbl-model" class="px-6 py-4">Mô Hình</th>
+                <th id="th-lbl-attack" class="px-6 py-4">Phương Thức</th>
+                <th id="th-lbl-category" class="px-6 py-4">Danh Mục</th>
+                <th id="th-lbl-verdict" class="px-6 py-4 text-center">Đánh Giá</th>
+                <th id="th-lbl-action" class="px-6 py-4 text-right">Tác Vụ</th>
+              </tr>
+            </thead>
+            <tbody id="results-table-body" class="divide-y divide-white/[0.05] bg-white/[0.005]">
+              <!-- Dynamically populated rows -->
+              <tr>
+                <td colspan="7" class="text-center py-20 text-xs text-slate-500">
+                  <div class="flex justify-center items-center gap-2.5">
+                    <svg class="animate-spin h-5 w-5 text-indigo-500" viewBox="0 0 24 24" fill="none">
+                      <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                      <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
+                    </svg>
+                    <span>Kiểm thức dữ liệu...</span>
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Mobile Stack Layout (Substitution Glass Cards) -->
+        <div id="results-mobile-container" class="block md:hidden divide-y divide-white/[0.05]">
+          <div class="text-center py-12 text-xs text-slate-400">
+             Đang đồng bộ tập dữ liệu...
+          </div>
+        </div>
+
+        <!-- Pagination summary footer -->
+        <div class="p-4 px-6 border-t border-white/[0.08] bg-black/30 flex items-center justify-between text-xs text-slate-400 font-mono">
+          <div>
+            LOGS MATCHED: <span id="log-count-loaded" class="font-bold text-white">0</span> / <span id="log-count-total" class="text-slate-500">0</span>
+          </div>
+          <div id="active-filters-info" class="hidden text-indigo-400 font-bold uppercase text-[9px] tracking-widest animate-pulse">
+            * Filters Applied
+          </div>
+        </div>
+
+      </section>
+
+      <!-- Subdued risk notice banner underneath logs (No slop margins, clean glass card) -->
+      <div id="live-banner-alert" class="hidden bg-red-500/[0.02] border border-red-500/15 rounded-2xl p-5 gap-4 text-xs leading-relaxed text-slate-400 shadow-[0_4px_25px_rgba(239,68,68,0.05)]">
+        <svg class="w-5 h-5 text-red-400 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
+        </svg>
+        <p>
+          <span id="alert-banner-bold" class="font-bold text-slate-300">Ghi Chú Vận Hành Red-Teaming:</span> 
+          <span id="live-banner-alert-desc">Tập dữ liệu chứa câu từ nhạy cảm tiếng Việt nhằm kiểm định tường mật rào bảo vệ của các mô hình LLM. Hãy ngăn chặn phát tán phản hồi sinh ra phục vụ mục đích sai lệch.</span>
+        </p>
+      </div>
+
+    </main>
+
+    <!-- Standard objective footer -->
+    <footer class="border-t border-white/[0.08] bg-black/40 py-8 mt-12 w-full text-center text-xs text-slate-500 space-y-1">
+      <p id="footer-text-copy">© 2026 VIET-JBB | AI Red Teaming & Semantics Evaluation Dashboard.</p>
+      <p id="footer-text-desc">Nền tảng kiểm thử phục vụ tối ưu và định lượng rào an toàn cho cộng đồng phát triển trí tuệ nhân tạo Việt ngữ.</p>
+    </footer>
+
+    <!-- INTERACTION DETAILS LIGHTWEIGHT DIALOG CONSOLE -->
+    <div id="detail-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/85 backdrop-blur-md transition-opacity duration-200">
+      
+      <!-- Glass Card Frame Modal -->
+      <div id="detail-modal-card" class="glass-card w-full max-w-2xl rounded-2xl shadow-[0_25px_60px_rgba(0,0,0,0.65)] flex flex-col overflow-hidden max-h-[85vh] scale-95 transition-transform duration-200">
+        
+        <!-- Header -->
+        <div class="p-5 border-b border-white/[0.08] bg-black/30 flex items-center justify-between">
+          <div class="flex items-center gap-3">
+            <span id="modal-id-badge" class="px-2.5 py-1 text-xs font-mono font-bold bg-white/[0.04] text-indigo-400 rounded-lg border border-white/[0.08]">JBB-VI-000</span>
+            <h2 id="modal-title-header" class="text-xs font-bold text-white uppercase tracking-wider">Chi Tiết Lịch Sử Red-Teaming</h2>
+          </div>
+          <!-- Close trigger button -->
+          <button id="modal-close-btn" class="p-1.5 px-3 rounded-lg text-slate-400 hover:text-white hover:bg-white/[0.04] transition text-xs cursor-pointer select-none">
+            ✕ Close
+          </button>
+        </div>
+
+        <!-- Scrollable contents -->
+        <div class="p-6 overflow-y-auto space-y-6 text-xs sm:text-sm">
+          
+          <!-- Metadisplays table -->
+          <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 bg-black/30 p-4 rounded-xl border border-white/[0.06] font-mono text-xs">
+            <div class="space-y-1">
+              <span id="modal-lbl-model" class="text-[9px] text-slate-500 block uppercase tracking-wider">MÔ HÌNH</span>
+              <p id="modal-meta-model" class="text-xs font-bold text-white">--</p>
+            </div>
+            <div class="space-y-1">
+              <span id="modal-lbl-attack" class="text-[9px] text-slate-500 block uppercase tracking-wider">PHƯƠNG PHÁP</span>
+              <p id="modal-meta-attack" class="text-xs font-semibold text-slate-300">--</p>
+            </div>
+            <div class="space-y-1">
+              <span id="modal-lbl-category" class="text-[9px] text-slate-500 block uppercase tracking-wider">CHỦ ĐỀ CHÍNH</span>
+              <p id="modal-meta-category" class="text-xs font-semibold text-slate-400">--</p>
+            </div>
+            <div class="space-y-1">
+              <span id="modal-lbl-verdict" class="text-[9px] text-slate-500 block uppercase tracking-wider">ĐÁNH GIÁ</span>
+              <div id="modal-verdict-badge-placeholder" class="mt-0.5">
+                <!-- Verdict loads dynamically -->
+              </div>
+            </div>
+          </div>
+
+          <!-- Prompt container component -->
+          <div class="space-y-2">
+            <label id="modal-lbl-prompt" class="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">PROMPT ĐẦU VÀO (PROMPT TEXT):</label>
+            <div id="modal-prompt-content" class="p-4 rounded-xl bg-black/45 border border-white/[0.06] text-slate-200 leading-relaxed font-semibold break-words whitespace-pre-wrap selection:bg-indigo-500/30">
+              --
+            </div>
+          </div>
+
+          <!-- Response container component -->
+          <div class="space-y-2">
+            <div class="flex justify-between items-center">
+              <label id="modal-lbl-response" class="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">PHẢN HỒI THỰC TẾ GHI NHẬN:</label>
+              <span id="response-success-tag" class="text-[10px] bg-white/[0.02] border border-white/[0.08] px-2.5 py-0.5 rounded-md font-semibold text-slate-400 font-mono">Đang kiểm định...</span>
+            </div>
+            <div id="modal-response-content" class="p-4 rounded-xl bg-black/45 border border-white/[0.06] text-slate-300 leading-relaxed font-mono break-words whitespace-pre-wrap text-[11px] select-all selection:bg-indigo-500/30">
+              --
+            </div>
+          </div>
+
+        </div>
+
+        <!-- Footer actions layout -->
+        <div class="p-4 border-t border-white/[0.08] bg-black/35 flex justify-end gap-2">
+          <button id="modal-action-close" class="px-4 py-1.5 rounded-xl bg-white/[0.03] hover:bg-white/[0.08] text-xs font-bold text-white transition cursor-pointer border border-white/[0.08]">
+            <span id="modal-action-btn-close-lbl">Đóng bảng</span>
+          </button>
+        </div>
+
+      </div>
+
+    </div>
+
+    <!-- Script loading -->
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>
